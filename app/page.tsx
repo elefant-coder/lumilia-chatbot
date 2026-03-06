@@ -1,195 +1,185 @@
-'use client'
-
-import { useState, useRef, useEffect } from 'react'
-import { v4 as uuidv4 } from 'uuid'
-
-interface Message {
-  role: 'user' | 'assistant'
-  content: string
-}
-
-export default function ChatPage() {
-  const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [sessionId] = useState(() => uuidv4())
-  const [started, setStarted] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLTextAreaElement>(null)
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages])
-
-  const startConversation = async () => {
-    setStarted(true)
-    setIsLoading(true)
-
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [], sessionId }),
-      })
-
-      const data = await res.json()
-      setMessages([{ role: 'assistant', content: data.message }])
-    } catch {
-      console.error('Failed to start conversation')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading) return
-
-    const userMessage: Message = { role: 'user', content: input }
-    const newMessages = [...messages, userMessage]
-    setMessages(newMessages)
-    setInput('')
-    setIsLoading(true)
-
-    inputRef.current?.blur()
-
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages, sessionId }),
-      })
-
-      const data = await res.json()
-      setMessages([...newMessages, { role: 'assistant', content: data.message }])
-    } catch {
-      console.error('Failed to send message')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      sendMessage()
-    }
-  }
-
-  if (!started) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-teal-50 to-white flex items-center justify-center p-4">
-        <div className="max-w-md w-full text-center space-y-8">
-          <div>
-            <div className="w-20 h-20 bg-teal-500 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              ルミリア
-            </h1>
-            <p className="mt-3 text-gray-600">
-              ルミリア美容クリニックのAIアシスタントです。
-              <br />
-              ご質問やご相談をお気軽にどうぞ。
-            </p>
-          </div>
-
-          <button
-            onClick={startConversation}
-            disabled={isLoading}
-            className="w-full py-4 px-6 bg-teal-500 text-white rounded-xl font-medium text-lg hover:bg-teal-600 transition-colors disabled:opacity-50"
-          >
-            {isLoading ? '準備中...' : 'チャットを開始する'}
-          </button>
-
-          <p className="text-sm text-gray-500">
-            24時間いつでもご相談いただけます
-          </p>
-        </div>
-      </div>
-    )
-  }
-
+export default function HomePage() {
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
-      {/* Header */}
-      <header className="bg-teal-500 text-white px-4 py-3 flex-shrink-0">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          </div>
-          <div>
-            <h1 className="font-semibold">ルミリア</h1>
-            <p className="text-xs opacity-80">ルミリア美容クリニック</p>
-          </div>
-        </div>
-      </header>
+    <main style={{ 
+      minHeight: '100vh', 
+      background: '#f5f5f5',
+      fontFamily: '"Noto Sans JP", sans-serif'
+    }}>
+      {/* Top Bar */}
+      <div style={{ 
+        background: '#7C7460', 
+        color: 'white', 
+        padding: '8px 16px',
+        fontSize: '12px',
+        textAlign: 'center'
+      }}>
+        診療時間　午前10:00〜13:30　午後15:00〜20:00　｜　休診日　不定休
+      </div>
 
-      {/* Messages */}
-      <main className="flex-1 overflow-y-auto p-4">
-        <div className="max-w-2xl mx-auto space-y-4 pb-4">
-          {messages.map((msg, i) => (
-            <div
+      {/* Hero Section */}
+      <section style={{
+        background: 'linear-gradient(135deg, #f8f6f3 0%, #e8e4de 100%)',
+        padding: '60px 20px',
+        textAlign: 'center'
+      }}>
+        <h1 style={{ 
+          fontSize: '28px', 
+          fontWeight: '500',
+          color: '#333',
+          marginBottom: '16px',
+          fontFamily: '"Noto Serif JP", serif'
+        }}>
+          五反田駅前ルミリア矯正歯科<br />オーラルビューティー
+        </h1>
+        <p style={{ color: '#666', marginBottom: '24px', lineHeight: '1.8' }}>
+          誰の目から見ても<br />
+          綺麗な歯並びを実現する
+        </p>
+        <a 
+          href="https://up-reserve.com/1007/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-block',
+            background: '#7C7460',
+            color: 'white',
+            padding: '16px 32px',
+            borderRadius: '8px',
+            textDecoration: 'none',
+            fontWeight: '500'
+          }}
+        >
+          無料カウンセリング予約
+        </a>
+      </section>
+
+      {/* Treatment Section */}
+      <section style={{ padding: '60px 20px', maxWidth: '1000px', margin: '0 auto' }}>
+        <h2 style={{ 
+          textAlign: 'center', 
+          marginBottom: '40px',
+          fontSize: '24px',
+          color: '#333'
+        }}>
+          診療内容
+        </h2>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '20px'
+        }}>
+          {[
+            { title: '大人の矯正歯科', sub: 'ワイヤー矯正', url: 'https://gotanda-kyousei-shika.clinic/medical-treatment/orthodontics/' },
+            { title: 'マウスピース矯正', sub: 'インビザライン', url: 'https://gotanda-kyousei-shika.clinic/medical-treatment/mouthpiece/' },
+            { title: '子どもの矯正歯科', sub: '小児矯正', url: 'https://gotanda-kyousei-shika.clinic/medical-treatment/children-orthodontic/' },
+            { title: 'ホワイトニング', sub: 'クリーニング', url: 'https://gotanda-kyousei-shika.clinic/medical-treatment/whitening/' },
+          ].map((item, i) => (
+            <a 
               key={i}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'block',
+                background: 'white',
+                padding: '24px',
+                borderRadius: '12px',
+                textDecoration: 'none',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                transition: 'transform 0.2s',
+                textAlign: 'center'
+              }}
             >
-              <div
-                className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                  msg.role === 'user'
-                    ? 'bg-teal-500 text-white'
-                    : 'bg-white border text-gray-800 shadow-sm'
-                }`}
-              >
-                <p className="whitespace-pre-wrap text-sm sm:text-base">{msg.content}</p>
-              </div>
-            </div>
+              <h3 style={{ color: '#333', marginBottom: '8px', fontSize: '16px' }}>{item.title}</h3>
+              <p style={{ color: '#888', fontSize: '12px' }}>{item.sub}</p>
+            </a>
           ))}
-
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-white border rounded-2xl px-4 py-3 shadow-sm">
-                <div className="flex gap-1">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div ref={messagesEndRef} />
         </div>
-      </main>
+      </section>
 
-      {/* Input */}
-      <footer className="bg-white border-t p-3 flex-shrink-0">
-        <div className="max-w-2xl mx-auto flex gap-2">
-          <textarea
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="メッセージを入力..."
-            rows={1}
-            className="flex-1 resize-none border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 text-base"
-            style={{ fontSize: '16px' }}
-          />
-          <button
-            onClick={sendMessage}
-            disabled={!input.trim() || isLoading}
-            className="px-4 sm:px-6 py-3 bg-teal-500 text-white rounded-xl font-medium hover:bg-teal-600 transition-colors disabled:opacity-50 flex-shrink-0"
-          >
-            送信
-          </button>
-        </div>
+      {/* Access Section */}
+      <section style={{ 
+        background: 'white', 
+        padding: '60px 20px',
+        textAlign: 'center'
+      }}>
+        <h2 style={{ marginBottom: '24px', fontSize: '24px', color: '#333' }}>アクセス</h2>
+        <p style={{ color: '#666', marginBottom: '8px' }}>〒141-0022 東京都品川区東五反田5-27-5 5セントラルビル4F</p>
+        <p style={{ color: '#666', marginBottom: '8px' }}>JR五反田駅東口より徒歩1分</p>
+        <p style={{ color: '#7C7460', fontWeight: '500', fontSize: '20px' }}>TEL: 03-6450-2811</p>
+      </section>
+
+      {/* Footer */}
+      <footer style={{ 
+        background: '#333', 
+        color: 'white', 
+        padding: '40px 20px',
+        textAlign: 'center'
+      }}>
+        <p style={{ marginBottom: '16px' }}>五反田駅前ルミリア矯正歯科オーラルビューティー</p>
+        <p style={{ fontSize: '12px', color: '#888' }}>© 2024 All rights reserved.</p>
       </footer>
-    </div>
+
+      {/* Fixed Bottom Bar */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        background: 'white',
+        boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
+        display: 'flex',
+        zIndex: 100
+      }}>
+        <a 
+          href="tel:03-6450-2811"
+          style={{
+            flex: 1,
+            padding: '12px',
+            textAlign: 'center',
+            textDecoration: 'none',
+            color: '#333',
+            borderRight: '1px solid #eee',
+            fontSize: '12px'
+          }}
+        >
+          📞 電話をかける
+        </a>
+        <a 
+          href="https://up-reserve.com/1007/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            flex: 1,
+            padding: '12px',
+            textAlign: 'center',
+            textDecoration: 'none',
+            background: '#c8e600',
+            color: '#333',
+            fontWeight: '500',
+            fontSize: '12px'
+          }}
+        >
+          📅 24時間WEB予約
+        </a>
+        <a 
+          href="https://lin.ee/DZR0JgY"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            flex: 1,
+            padding: '12px',
+            textAlign: 'center',
+            textDecoration: 'none',
+            background: '#06c755',
+            color: 'white',
+            fontWeight: '500',
+            fontSize: '12px'
+          }}
+        >
+          LINE予約
+        </a>
+      </div>
+    </main>
   )
 }
